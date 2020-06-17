@@ -1,0 +1,177 @@
+{% extends "base.html" %} 
+{% block users %} active {% endblock %}
+{% block body %}
+
+<h2>User List</h2>
+<div class="table-responsive">
+  <table class="table table-striped table-sm">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Email</th>
+        <th>Is Admin</th>
+        <th>Phone Number</th>
+        <th>status</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for user in users %}
+
+      <tr>
+        <td>1,001</td>
+        <td>{{ user.email }}</td>
+        <td>{{ user.staff }}</td>
+        <td>{{ user.phone }}</td>
+        <td class="user-status">{{ user.status }}</td>
+        <td id="status">
+          <!-- Split dropright button -->
+          <div class="btn-group dropright">
+            <button type="button" class="btn btn-secondary">
+              Split dropright
+            </button>
+            <button
+              type="button"
+              class="btn btn-sm btn-secondary dropdown-toggle dropdown-toggle-split"
+              data-toggle="dropdown"
+              aria-haspopup="true"
+              aria-expanded="false"
+            >
+              <span class="sr-only">Toggle Dropright</span>
+            </button>
+            <div class="dropdown-menu">
+              <a
+                class="dropdown-item ajax-btn"
+                href="#"
+                data-actions="/comment/"
+                data-message="Send user {{ user.email }} email"
+                data-toggle="modal"
+                data-target="#exampleModal"
+                data-id="{{ user.id }}"
+                data-email="{{ user.id }}"
+                >Send user email</a
+              >
+              <a
+                class="dropdown-item"
+                href="#"
+                id="toggle-btn"
+                data-id="{{ user.id }}"
+                >Toggle status</a
+              >
+            </div>
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+<div
+  class="modal fade"
+  id="exampleModal"
+  tabindex="-1"
+  role="dialog"
+  aria-labelledby="exampleModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-body">
+        <div id="message" class="mb-1"></div>
+        <div
+          class="alert alert-message alert-warning alert-dismissible fade show"
+          role="alert"
+          style="display: none;"
+        >
+          <strong class="message-errors"> </strong>
+        </div>
+        <form id="works">
+          {% csrf_token %}
+          <div class="form-group">
+            <input
+              type="text"
+              class="form-control"
+              name="valName"
+              id="notedValue"
+            />
+            <input type="hidden" name="user_id" id="specialValue" />
+            <input type="hidden" name="user_email" id="specialValue" />
+          </div>
+          <div class="modal-footer">
+            <span class="btn btn-secondary close-modal">
+              Close
+            </span>
+            <button type="submit" class="btn btn-primary">
+              Save changes
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %} {% block script %}
+<script>
+  let messgaeBox = $("#message");
+
+  $(".close-modal").on("click", (event) => {
+    event.preventDefault();
+    $(".alert-message").hide("show");
+    $("#exampleModal").modal("toggle");
+  });
+
+  $(".dropdown-menu").on("click", ".ajax-btn", function (event) {
+    event.preventDefault();
+    valueKeeper = $("#notedValue");
+    var li = $(this).closest("a");
+    let actions = li.data("actions");
+    let message = li.data("message");
+    let userId = li.data("id");
+    let formValueId = $("#specialValue").val(userId);
+    completeUrl = "/users/send_user_email/";
+    messgaeBox.html(`Action: ${message}`);
+  });
+
+  $("tbody").on("click", "a#toggle-btn", function (e) {
+    e.preventDefault();
+    var li = $(this).closest("tr");
+    $(".user-status", li).text(
+      $(".user-status", li).text() === "active" ? "inactive" : "active"
+    );
+    let userId = $("#toggle-btn", li).data("id");
+    $.ajax({
+      url: `/users/user_status/${userId}/`,
+      type: "GET",
+      data: {},
+      processData: false, // tell jQuery not to process the data
+      contentType: false, // tell jQuery not to set contentType
+      beforeSend: () => {},
+      success: (datal) => {
+        
+      },
+    });
+  });
+  $("#works").on("submit", function (e) {
+    e.preventDefault();
+    var fd = new FormData(document.querySelector("form#works"));
+    $.ajax({
+      url: completeUrl,
+      type: "POST",
+      data: fd,
+      processData: false, // tell jQuery not to process the data
+      contentType: false, // tell jQuery not to set contentType
+      beforeSend: () => {},
+      success: (datal) => {
+        valueKeeper.val("");
+        $(".alert-message").show();
+        if (datal.status) {
+          $(".alert-message").addClass("show");
+          $(".message-errors").html(datal.detail);
+        } else {
+          $(".message-errors").html(datal.detail);
+        }
+      },
+    });
+  });
+</script>
+{% endblock %}

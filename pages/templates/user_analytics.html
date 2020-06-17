@@ -1,0 +1,34 @@
+{% extends "base.html" %} {% block dashboard %}active{% endblock %} 
+{% block body %}
+<canvas class="my-4 w-100" id="line-chart" width="900" height="380"></canvas>
+{% endblock %} {% block script %}
+<script type="text/javascript">
+  
+      $(document).ready(function(){
+        $.ajax({
+  		method:'GET',
+  		url: '/users/user_dashboard_api/?type={{type}}',
+  		success: function(data){
+  			new Chart(document.getElementById("line-chart"), {
+  		  type: 'line',
+  		  data: {
+  		    labels: data.days,
+  		    datasets: [{
+  		        data: data.data_set,
+  		        label: "Users",
+  		        borderColor: "#3e95cd",
+  		        backgroundColor: '#3e95cd',
+  		        fill: false
+  		      }
+  		    ]
+  		  },
+  		  options: {
+  		    title: {
+  		      display: true,
+  		      text: 'Number of users'
+  		    }
+  		  }
+  		})}})
+      });
+</script>
+{% endblock %}
