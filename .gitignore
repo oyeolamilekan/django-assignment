@@ -106,7 +106,6 @@ venv.bak/
 
 ll_env/ 
 __pycache__/
-*.sqlite3
 *.jpg
 # *.png
 website/media
